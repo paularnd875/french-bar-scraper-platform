@@ -118,23 +118,40 @@ def execute_scraper_cloud(scraper_id, scraper_config):
         if not scraper_code:
             raise Exception("Impossible de télécharger le scraper")
         
+        # Modifie le scraper pour Railway/headless
+        modified_code = adapt_scraper_for_cloud(scraper_code)
+        
         # Créer un fichier temporaire
         with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as temp_file:
-            temp_file.write(scraper_code)
+            temp_file.write(modified_code)
             temp_script_path = temp_file.name
+        
+        # Variables d'environnement pour Selenium headless
+        env = os.environ.copy()
+        env.update({
+            'DISPLAY': ':99',
+            'CHROME_BIN': '/usr/bin/google-chrome-stable',
+            'CHROME_DRIVER': '/usr/local/bin/chromedriver'
+        })
         
         # Exécuter le scraper
         process = subprocess.Popen(
             ["python3", temp_script_path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            env=env
         )
         
         running_processes[scraper_id] = process
         
-        # Monitor process output
-        stdout, stderr = process.communicate()
+        # Monitor process output avec timeout
+        try:
+            stdout, stderr = process.communicate(timeout=600)  # 10 minutes max
+        except subprocess.TimeoutExpired:
+            process.kill()
+            stdout, stderr = process.communicate()
+            stderr = "Timeout: Scraper stopped after 10 minutes"
         
         # Nettoyer le fichier temporaire
         os.unlink(temp_script_path)
@@ -154,6 +171,50 @@ def execute_scraper_cloud(scraper_id, scraper_config):
     finally:
         if scraper_id in running_processes:
             del running_processes[scraper_id]
+
+def adapt_scraper_for_cloud(scraper_code):
+    """Adapte le code scraper pour l'environnement cloud."""
+    
+    # Ajouter la configuration headless pour Selenium
+    cloud_setup = '''
+import os
+from selenium.webdriver.chrome.options import Options
+
+def get_chrome_options():
+    """Configuration Chrome pour Railway."""
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--disable-features=VizDisplayCompositor')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36')
+    
+    # Utiliser les binaires Railway
+    if os.environ.get('CHROME_BIN'):
+        options.binary_location = os.environ.get('CHROME_BIN')
+    
+    return options
+
+# Remplacer les appels Chrome() par Chrome(options=get_chrome_options())
+'''
+    
+    # Injecter le code au début
+    modified_code = cloud_setup + "\n" + scraper_code
+    
+    # Remplacer les initialisations de webdriver
+    replacements = [
+        ('webdriver.Chrome()', 'webdriver.Chrome(options=get_chrome_options())'),
+        ('webdriver.Chrome(options=', 'webdriver.Chrome(options=get_chrome_options(), options='),
+        ('Chrome()', 'Chrome(options=get_chrome_options())'),
+        ('Chrome(options=', 'Chrome(options=get_chrome_options(), options=')
+    ]
+    
+    for old, new in replacements:
+        modified_code = modified_code.replace(old, new)
+    
+    return modified_code
 
 @app.route('/')
 def index():
