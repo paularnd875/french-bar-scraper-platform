@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>French Bar Scrapers Platform - RAILWAY Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d1b69 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .railway {
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            font-size: 1.2em;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .railway-banner {
+            background: linear-gradient(135deg, #7C3AED, #2563EB);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: white;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .scrape-all-btn {
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .scrape-all-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 36px rgba(139, 92, 246, 0.5);
+        }
+
+        .scrape-all-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .filter-bar {
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-input {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1rem;
+            min-width: 300px;
+        }
+
+        .filter-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .scrapers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        .scraper-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scraper-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .scraper-card h3 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .scraper-btn {
+            background: linear-gradient(135deg, #7C3AED, #2563EB);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+            font-size: 0.9rem;
+        }
+
+        .scraper-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+        }
+
+        .scraper-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin: 8px 0;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+        }
+
+        .progress-global {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .scrapers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .filter-input {
+                min-width: 100%;
+            }
+        }
+
+        .railway-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .cloud-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚂 French Bar Scrapers Platform <span class="railway">RAILWAY</span></h1>
+            <p>Système cloud pour les 66 barreaux français <span class="cloud-icon">☁️</span></p>
+            <div class="railway-banner">
+                🚂 VERSION RAILWAY : Hébergement gratuit sur Railway - Scrapers téléchargés depuis GitHub
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <h3 id="total-scrapers">66</h3>
+                <p>Barreaux cloud <span class="railway-badge">RAILWAY</span></p>
+            </div>
+            <div class="stat-card">
+                <h3 id="running-count">0</h3>
+                <p>En cours</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="completed-count">0</h3>
+                <p>Terminés</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="failed-count">0</h3>
+                <p>Échecs</p>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <button id="scrape-all-btn" class="scrape-all-btn">
+                🚂 RAILWAY SCRAPING - Tous les 66 barreaux
+            </button>
+            
+            <div class="progress-global" id="global-progress">
+                <h4 style="color: white; margin-bottom: 10px;">Progression globale</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="global-progress-fill"></div>
+                </div>
+                <p style="color: white; text-align: center; margin-top: 8px;">
+                    <span id="progress-text">0 / 66 barreaux terminés</span>
+                </p>
+            </div>
+            
+            <div class="filter-bar">
+                <input type="text" class="filter-input" id="search-filter" placeholder="🔍 Rechercher un barreau...">
+                <p style="color: white;">☁️ Scrapers exécutés dans le cloud Railway</p>
+            </div>
+        </div>
+
+        <div class="scrapers-grid" id="scrapers-grid">
+            {% for scraper_id, config in scrapers.items() %}
+            <div class="scraper-card" data-name="{{ config.name.lower() }}">
+                <h3>{{ config.name }}</h3>
+                <div class="status" id="status-{{ scraper_id }}">Prêt</div>
+                <button class="scraper-btn" onclick="startScraper('{{ scraper_id }}')">
+                    Lancer
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        let runningScrapers = new Set();
+        let totalScrapers = {{ scrapers|length }};
+
+        function startScraper(scraperId) {
+            if (runningScrapers.has(scraperId)) {
+                showNotification('Ce scraper est déjà en cours...', 'error');
+                return;
+            }
+
+            fetch(`/api/scrape/${scraperId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                } else {
+                    showNotification(data.message, 'success');
+                    updateScraperStatus(scraperId, 'running');
+                    runningScrapers.add(scraperId);
+                    updateStats();
+                    
+                    // Check status periodically
+                    checkScraperStatus(scraperId);
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur de connexion', 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        function startAllScrapers() {
+            document.getElementById('scrape-all-btn').disabled = true;
+            document.getElementById('global-progress').style.display = 'block';
+            
+            fetch('/api/scrape/all', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showNotification(data.error, 'error');
+                    document.getElementById('scrape-all-btn').disabled = false;
+                } else {
+                    showNotification(data.message, 'success');
+                    // Mark all scrapers as running
+                    {% for scraper_id, config in scrapers.items() %}
+                    updateScraperStatus('{{ scraper_id }}', 'running');
+                    runningScrapers.add('{{ scraper_id }}');
+                    {% endfor %}
+                    updateStats();
+                    checkAllStatus();
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur de connexion', 'error');
+                document.getElementById('scrape-all-btn').disabled = false;
+                console.error('Error:', error);
+            });
+        }
+
+        function checkScraperStatus(scraperId) {
+            setTimeout(() => {
+                fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.running.includes(scraperId)) {
+                        // Scraper finished
+                        runningScrapers.delete(scraperId);
+                        updateScraperStatus(scraperId, 'completed');
+                        updateStats();
+                    } else {
+                        // Still running, check again
+                        checkScraperStatus(scraperId);
+                    }
+                });
+            }, 3000);
+        }
+
+        function checkAllStatus() {
+            setTimeout(() => {
+                fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    // Update stats
+                    document.getElementById('running-count').textContent = data.running.length;
+                    document.getElementById('completed-count').textContent = data.stats.completed;
+                    document.getElementById('failed-count').textContent = data.stats.failed;
+
+                    // Update global progress
+                    const progress = data.stats.total > 0 ? ((data.stats.completed + data.stats.failed) / data.stats.total) * 100 : 0;
+                    document.getElementById('global-progress-fill').style.width = progress + '%';
+                    document.getElementById('progress-text').textContent = `${data.stats.completed + data.stats.failed} / ${data.stats.total} barreaux terminés`;
+
+                    if (data.running.length > 0) {
+                        // Still scrapers running
+                        checkAllStatus();
+                    } else {
+                        // All finished
+                        document.getElementById('scrape-all-btn').disabled = false;
+                        showNotification(`🚂 RAILWAY SCRAPING TERMINÉ! ${data.stats.completed} réussis, ${data.stats.failed} échecs`, 'success');
+                    }
+                });
+            }, 4000);
+        }
+
+        function updateScraperStatus(scraperId, status) {
+            const statusEl = document.getElementById(`status-${scraperId}`);
+            
+            if (statusEl) {
+                switch(status) {
+                    case 'running':
+                        statusEl.textContent = 'En cours...';
+                        statusEl.style.background = 'rgba(255, 193, 7, 0.2)';
+                        statusEl.style.color = '#ffc107';
+                        break;
+                    case 'completed':
+                        statusEl.textContent = 'Terminé ✅';
+                        statusEl.style.background = 'rgba(16, 185, 129, 0.2)';
+                        statusEl.style.color = '#10B981';
+                        break;
+                    case 'error':
+                        statusEl.textContent = 'Erreur ❌';
+                        statusEl.style.background = 'rgba(239, 68, 68, 0.2)';
+                        statusEl.style.color = '#EF4444';
+                        break;
+                    default:
+                        statusEl.textContent = 'Prêt';
+                        statusEl.style.background = 'rgba(108, 117, 125, 0.2)';
+                        statusEl.style.color = '#6c757d';
+                }
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('running-count').textContent = runningScrapers.size;
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Search filter functionality
+        document.getElementById('search-filter').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.scraper-card');
+            
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                if (name.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Event listeners
+        document.getElementById('scrape-all-btn').addEventListener('click', startAllScrapers);
+    </script>
+</body>
+</html>
